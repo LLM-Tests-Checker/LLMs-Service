@@ -23,6 +23,7 @@ class Question:
     number: int
     text: str
     answers: list[Answer]
+    llm_answer: int | None
 
     @staticmethod
     def from_dict(data: dict[str, tp.Any]) -> "Question":
@@ -30,6 +31,7 @@ class Question:
             number=data["number"],
             text=data["text"],
             answers=[Answer.from_dict(dict_answer) for dict_answer in data["answers"]],
+            llm_answer=data.get("llm_answer", None),
         )
 
     def to_dict(self) -> dict[str, tp.Any]:
@@ -37,6 +39,7 @@ class Question:
             "number": self.number,
             "text": self.text,
             "answers": [answer.to_dict() for answer in self.answers],
+            "llm_answer": self.llm_answer,
         }
 
 
@@ -60,7 +63,7 @@ class Test:
         return {
             "id": self.id,
             "name": self.name,
-            "descriptions": self.description,
+            "description": self.description,
             "questions": [question.to_dict() for question in self.questions],
         }
 
@@ -88,38 +91,41 @@ class LLMTestCheckRequest:
 
 
 @dataclass
-class QueryCheckResult:
-    llm_slug: str
-    answers: tp.List[tp.Dict[str, int]]
-
-    @staticmethod
-    def from_dict(data: dict[str, tp.Any]) -> "QueryCheckResult":
-        return QueryCheckResult(llm_slug=data["llm_slug"], answers=data["answers"])
-
-    def to_dict(self) -> dict[str, tp.Any]:
-        return {"llm_slug": self.llm_slug, "answers": self.answers}
-
-
-@dataclass
 class LLMTestCheckResult:
     id: int
-    target_test_id: int
+    target_test: Test
     created_at: datetime
-    results: QueryCheckResult
+    llm_slug: str
 
     @staticmethod
     def from_dict(data: dict[str, tp.Any]) -> "LLMTestCheckResult":
         return LLMTestCheckResult(
             id=data["id"],
-            target_test_id=data["target_test_id"],
-            created_at=datetime.now(),
-            results=QueryCheckResult.from_dict(data["result"])
+            target_test=Test.from_dict(data["target_test"]),
+            created_at=data.get("created_at", datetime.now()),
+            llm_slug=data["llm_slug"],
         )
 
     def to_dict(self) -> dict[str, tp.Any]:
         return {
             "id": self.id,
-            "target_test_id": self.target_test_id,
+            "target_test": self.target_test.to_dict(),
             "created_at": self.created_at,
-            "results": self.results.to_dict(),
+            "llm_slug": self.llm_slug,
+        }
+
+    def to_response_dict(self) -> dict[str, tp.Any]:
+        return {
+            "id": self.id,
+            "target_test_id": self.target_test.id,
+            "created_at": self.created_at.timestamp(),
+            "results": {
+                "llm_slug": self.llm_slug,
+                "answers": [
+                    {
+                        "question_number": question.number,
+                        "selected_answer_number": question.llm_answer,
+                    } for question in self.target_test.questions
+                ]
+            },
         }
