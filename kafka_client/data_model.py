@@ -1,7 +1,7 @@
 import typing as tp
 
 from datetime import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -94,8 +94,8 @@ class LLMTestCheckRequest:
 class LLMTestCheckResult:
     id: int
     target_test: Test
-    created_at: datetime
     llm_slug: str
+    created_at: datetime = field(default_factory=lambda: datetime.now())
 
     @staticmethod
     def from_dict(data: dict[str, tp.Any]) -> "LLMTestCheckResult":

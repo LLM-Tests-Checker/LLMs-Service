@@ -6,18 +6,18 @@ from kafka_client.data_model import LLMTestCheckRequest, LLMTestCheckResult
 
 
 class KafkaClient:
-    def __init__(self, kafka_broker_ip: str, kafka_broker_port: int, request_topic: str, response_topic: str):
+    def __init__(self, kafka_broker_addr: str, kafka_broker_port: int, request_topic: str, response_topic: str):
         self.request_topic: str = request_topic
         self.response_topic: str = response_topic
 
         self.consumer: Consumer = Consumer({
-            "bootstrap.servers": f"{kafka_broker_ip}:{kafka_broker_port}",
+            "bootstrap.servers": f"{kafka_broker_addr}:{kafka_broker_port}",
             "group.id": 0,
             "auto.offset.reset": "earliest",
         })
         self.consumer.subscribe([request_topic])
 
-        self.producer: Producer = Producer({"bootstrap.servers": f"{kafka_broker_ip}:{kafka_broker_port}"})
+        self.producer: Producer = Producer({"bootstrap.servers": f"{kafka_broker_addr}:{kafka_broker_port}"})
 
     def requests_generator(self) -> tp.Generator[LLMTestCheckRequest, None, None]:
         while True:
@@ -38,6 +38,8 @@ class KafkaClient:
             except Exception as err:
                 print(f"Something went wrong in decoding request! Error: {err}")
 
+            self.producer.flush()
+
     def send_response(self, response: LLMTestCheckResult) -> None:
         self.producer.produce(
             topic=self.response_topic,
@@ -45,8 +47,9 @@ class KafkaClient:
             on_delivery=self._delivery_report,
         )
 
+    def stop(self) -> None:
+        self.consumer.close()
+
     def _delivery_report(self, error: KafkaError, message: Message) -> None:
         if error is not None:
             print(f"Response delivery failed: {error}")
-        else:
-            print(f"Response successfully delivered to {message.topic()} (partition: {message.partition()}) at offset {message.offset()}.")
