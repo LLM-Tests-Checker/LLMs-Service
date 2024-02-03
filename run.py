@@ -1,4 +1,5 @@
 import os
+import logging
 import argparse
 
 from server import TestCheckerServer
@@ -14,6 +15,13 @@ def parse_args() -> argparse.Namespace:
 
 
 def main(args: argparse.Namespace) -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="[%(asctime)s][%(levelname)s][%(filename)s] %(message)s",
+        datefmt="%H:%M:%S %d-%m-%Y",
+        filename="log.txt",
+    )
+
     server: TestCheckerServer = TestCheckerServer(
         kafka_broker_addr=args.kafka_broker_addr,
         kafka_broker_port=args.kafka_broker_port,

@@ -47,7 +47,7 @@ class Question:
 class Test:
     id: int
     name: str
-    description: str
+    description: tp.Optional[str]
     questions: list[Question]
 
     @staticmethod
@@ -55,7 +55,7 @@ class Test:
         return Test(
             id=data["id"],
             name=data["name"],
-            description=data["description"],
+            description=data.get("description", None),
             questions=[Question.from_dict(dict_question) for dict_question in data["questions"]],
         )
 

@@ -1,4 +1,5 @@
 import json
+import logging
 import typing as tp
 
 from confluent_kafka import Consumer, Producer, Message, KafkaError
@@ -27,16 +28,16 @@ class KafkaClient:
                 continue
 
             if message.error():
-                print(f"Got message with error: {message.error()}")
+                logging.warning(f"Got message with error: {message.error()}. It will be skipped.")
                 continue
 
             try:
                 dict_request: dict[str, tp.Any] = json.loads(message.value())
                 yield LLMTestCheckRequest.from_dict(dict_request)
             except json.JSONDecodeError as err:
-                print(f"Can't decode request json: {err}")
+                logging.warning(f"Can't decode request json. It will be skipped. Error:\n{err}")
             except Exception as err:
-                print(f"Something went wrong in decoding request! Error: {err}")
+                logging.warning(f"Something went wrong in decoding request. It will be skipped. Error:\n{err}")
 
             self.producer.flush()
 
@@ -52,4 +53,4 @@ class KafkaClient:
 
     def _delivery_report(self, error: KafkaError, message: Message) -> None:
         if error is not None:
-            print(f"Response delivery failed: {error}")
+            logging.warning(f"Response delivery failed: {error}")

@@ -1,3 +1,5 @@
+import logging
+
 from kafka_client import KafkaClient, LLMTestCheckResult
 from modelling import IModel, DummyModel
 
@@ -14,16 +16,16 @@ class TestCheckerServer:
         }
 
     def run(self) -> None:
-        print(f"Running server is connected to {self.kafka_broker_ip}.\n"
-              f"Listening requests from `{self.kafka_request_topic}` topic.\n"
-              f"Response will be sent to `{self.kafka_response_topic}` topic.")
+        logging.info(f"Running server is connected to {self.kafka_broker_ip}.")
+        logging.info(f"Listening requests from `{self.kafka_request_topic}` topic.")
+        logging.info(f"Responses will be sent to `{self.kafka_response_topic}` topic.")
 
         try:
             self._run_impl()
         except KeyboardInterrupt:
-            print("Server was manually interrupted. Stopping...")
+            logging.info("Server was manually interrupted. Stopping...")
         except Exception as err:
-            print(f"Server got exception: {err}. Stopping...")
+            logging.error(f"Server got exception: {err}. Stopping...")
         finally:
             self.stop()
 
@@ -34,9 +36,9 @@ class TestCheckerServer:
 
     def _run_impl(self) -> None:
         for request in self.kafka_client.requests_generator():
-            print(f"Got request with id=`{request.id}`")
+            logging.info(f"Got request with id=`{request.id}`")
             if request.llm_slug not in self.models:
-                print(f"Model with llm_slug=`{request.llm_slug}` is not exists. This request is skipped.")
+                logging.warning(f"Model with llm_slug=`{request.llm_slug}` does not exists. This request is skipped.")
                 continue
 
             self._load_requested_model(request.llm_slug)
@@ -48,7 +50,7 @@ class TestCheckerServer:
                 target_test=request.test,
                 llm_slug=request.llm_slug,
             ))
-            print(f"Send response to request with id=`{request.id}`")
+            logging.info(f"Send response to request with id=`{request.id}`")
 
     def _load_requested_model(self, requested_llm_slug: str) -> None:
         if self.models[requested_llm_slug].is_loaded:
