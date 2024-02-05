@@ -13,7 +13,7 @@ class KafkaClient:
 
         self.consumer: Consumer = Consumer({
             "bootstrap.servers": f"{kafka_broker_addr}:{kafka_broker_port}",
-            "group.id": 0,
+            "group.id": "llms_serice_group",
             "auto.offset.reset": "earliest",
         })
         self.consumer.subscribe([request_topic])
