@@ -46,6 +46,7 @@ class KafkaClient:
             topic=self.response_topic,
             value=json.dumps(response.to_response_dict()).encode("utf-8"),
             on_delivery=self._delivery_report,
+            headers={"Check-Result-Version": "1.0.0"},
         )
 
     def stop(self) -> None:
