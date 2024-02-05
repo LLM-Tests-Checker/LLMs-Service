@@ -2,15 +2,17 @@ import os
 import logging
 import argparse
 
+from dotenv import load_dotenv
+
 from server import TestCheckerServer
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--kafka_broker_addr", type=str, default=os.environ.get("KAFKA_BROKER_ADDR"))
-    parser.add_argument("--kafka_broker_port", type=int, default=os.environ.get("KAFKA_BROKER_PORT"))
-    parser.add_argument("--kafka_request_topic", type=str, default=os.environ.get("KAFKA_REQUEST_TOPIC"))
-    parser.add_argument("--kafka_response_topic", type=str, default=os.environ.get("KAFKA_RESPONSE_TOPIC"))
+    parser.add_argument("--kafka_broker_addr", type=str, default=os.getenv("KAFKA_BROKER_ADDR"))
+    parser.add_argument("--kafka_broker_port", type=int, default=os.getenv("KAFKA_BROKER_PORT"))
+    parser.add_argument("--kafka_request_topic", type=str, default=os.getenv("KAFKA_REQUEST_TOPIC"))
+    parser.add_argument("--kafka_response_topic", type=str, default=os.getenv("KAFKA_RESPONSE_TOPIC"))
     return parser.parse_args()
 
 
@@ -31,4 +33,5 @@ def main(args: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
+    load_dotenv()
     main(parse_args())
