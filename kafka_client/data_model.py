@@ -93,7 +93,6 @@ class LLMTestCheckRequest:
 class LLMTestCheckResult:
     id: str
     target_test: Test
-    llm_slug: str
     created_at: datetime = field(default_factory=lambda: datetime.now())
 
     @staticmethod
@@ -102,7 +101,6 @@ class LLMTestCheckResult:
             id=data["id"],
             target_test=Test.from_dict(data["target_test"]),
             created_at=data.get("created_at", datetime.now()),
-            llm_slug=data["llm_slug"],
         )
 
     def to_dict(self) -> dict[str, tp.Any]:
@@ -110,7 +108,6 @@ class LLMTestCheckResult:
             "id": self.id,
             "target_test": self.target_test.to_dict(),
             "created_at": self.created_at,
-            "llm_slug": self.llm_slug,
         }
 
     def to_response_dict(self) -> dict[str, tp.Any]:
@@ -118,13 +115,10 @@ class LLMTestCheckResult:
             "id": self.id,
             "target_test_id": self.target_test.id,
             "created_at": self.created_at.timestamp(),
-            "results": {
-                "llm_slug": self.llm_slug,
-                "answers": [
-                    {
-                        "question_number": question.number,
-                        "selected_answer_number": question.llm_answer,
-                    } for question in self.target_test.questions
-                ]
-            },
+            "answers": [
+                {
+                    "question_number": question.number,
+                    "selected_answer_number": question.llm_answer,
+                } for question in self.target_test.questions
+            ]
         }

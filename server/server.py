@@ -48,7 +48,6 @@ class TestCheckerServer:
             self.kafka_client.send_response(LLMTestCheckResult(
                 id=request.id,
                 target_test=request.test,
-                llm_slug=request.llm_slug,
             ))
             logging.info(f"Sent response to request with id=`{request.id}`.")
 
