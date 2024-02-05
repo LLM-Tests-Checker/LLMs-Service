@@ -19,7 +19,6 @@ def main(args: argparse.Namespace) -> None:
         level=logging.INFO,
         format="[%(asctime)s][%(levelname)s][%(filename)s] %(message)s",
         datefmt="%H:%M:%S %d-%m-%Y",
-        filename="log.txt",
     )
 
     server: TestCheckerServer = TestCheckerServer(

@@ -36,7 +36,7 @@ class TestCheckerServer:
 
     def _run_impl(self) -> None:
         for request in self.kafka_client.requests_generator():
-            logging.info(f"Got request with id=`{request.id}`")
+            logging.info(f"Got request with id=`{request.id}` for model=`{request.llm_slug}`.")
             if request.llm_slug not in self.models:
                 logging.warning(f"Model with llm_slug=`{request.llm_slug}` does not exists. This request is skipped.")
                 continue
@@ -50,7 +50,7 @@ class TestCheckerServer:
                 target_test=request.test,
                 llm_slug=request.llm_slug,
             ))
-            logging.info(f"Send response to request with id=`{request.id}`")
+            logging.info(f"Sent response to request with id=`{request.id}`.")
 
     def _load_requested_model(self, requested_llm_slug: str) -> None:
         if self.models[requested_llm_slug].is_loaded:
