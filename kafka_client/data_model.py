@@ -8,14 +8,13 @@ from dataclasses import dataclass, field
 class Answer:
     number: int
     text: str
-    is_correct: bool
 
     @staticmethod
     def from_dict(data: dict[str, tp.Any]) -> "Answer":
-        return Answer(number=data["number"], text=data["text"], is_correct=data["is_correct"])
+        return Answer(number=data["number"], text=data["text"])
 
     def to_dict(self) -> dict[str, tp.Any]:
-        return {"number": self.number, "text": self.text, "is_correct": self.is_correct}
+        return {"number": self.number, "text": self.text}
 
 
 @dataclass
@@ -45,7 +44,7 @@ class Question:
 
 @dataclass
 class Test:
-    id: int
+    id: str
     name: str
     description: tp.Optional[str]
     questions: list[Question]
@@ -70,7 +69,7 @@ class Test:
 
 @dataclass
 class LLMTestCheckRequest:
-    id: int
+    id: str
     test: Test
     llm_slug: str
 
@@ -92,7 +91,7 @@ class LLMTestCheckRequest:
 
 @dataclass
 class LLMTestCheckResult:
-    id: int
+    id: str
     target_test: Test
     llm_slug: str
     created_at: datetime = field(default_factory=lambda: datetime.now())
