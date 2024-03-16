@@ -1,6 +1,7 @@
 import random
-from kafka_client.data_model import Question
+
 from modelling import IModel
+from kafka_client.data_model import Question
 
 
 class DummyModel(IModel):
