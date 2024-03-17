@@ -4,7 +4,7 @@ import pytest
 from dotenv import load_dotenv
 
 from kafka_client.data_model import Question, Answer
-from modelling import DummyModel, GigaChatModel
+from modelling import DummyModel, GigaChatModel, GPT4Model
 
 
 @pytest.fixture
@@ -31,5 +31,12 @@ def test_dummy_model(question: Question, num_answers: int) -> None:
 def test_gigachat_model(question: Question) -> None:
     load_dotenv()
     model: GigaChatModel = GigaChatModel(credentials=os.getenv("GIGACHAT_CREDENTIALS", ""))
+    model.load()
+    assert model.get_answer(question) == 2
+
+
+def test_gpt4_model(question: Question) -> None:
+    load_dotenv()
+    model: GPT4Model = GPT4Model(credentials=os.getenv("GPT4_CREDENTIALS", ""))
     model.load()
     assert model.get_answer(question) == 2
