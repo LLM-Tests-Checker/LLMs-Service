@@ -1,41 +1,38 @@
 import logging
 
-from gigachat import GigaChat
-from gigachat.models import Chat, Messages, MessagesRole, ChatCompletion
+from openai import OpenAI
+from openai.types.chat import ChatCompletion
 
 from modelling import IModel
 from kafka_client.data_model import Question
 
 
-class GigaChatModel(IModel):
+class GPT4Model(IModel):
     def __init__(self, credentials: str) -> None:
         self.is_loaded: bool = False
         self.credentials: str = credentials
-        self._model: GigaChat | None = None
+        self._model: OpenAI | None = None
 
         self._possible_answers: str = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЫЭЮЯ"
 
     def get_answer(self, question: Question) -> int:
         assert self.is_loaded and self._model is not None, "You need load model first, call `load()` method."
 
-        payload: Chat = Chat(
-            max_tokens=2,
+        response: ChatCompletion = self._model.chat.completions.create(
+            model="gpt-4",
             messages=[
-                Messages(
-                    role=MessagesRole.SYSTEM,
-                    content="Ниже приведен вопрос с множественным выбором. "
-                            "Твой ответ должен содержать единственный символ - букву правильного ответа.",
-                ),
-                Messages(
-                    role=MessagesRole.USER,
-                    content=self._format_question(question),
-                )
+                {"role": "system", "content": "Ниже приведен вопрос с множественным выбором. "
+                                              "Твой ответ должен содержать единственный символ - букву правильного ответа."},
+                {"role": "user", "content": self._format_question(question)},
             ],
         )
 
-        response: ChatCompletion = self._model.chat(payload=payload)
+        if response.choices[0].message.content is None:
+            logging.warn("GPT-4 answer is None!")
+            return 0
+
         if response.choices[0].message.content[0] not in self._possible_answers[:len(question.answers)]:
-            logging.warn("Gigachat answer is not in possible options!")
+            logging.warn("GPT-4 answer is not in possible options!")
             return 0
 
         return self._possible_answers.index(response.choices[0].message.content[0])
@@ -45,7 +42,7 @@ class GigaChatModel(IModel):
             return
 
         self.is_loaded = True
-        self._model = GigaChat(model="GigaChat-Pro", credentials=self.credentials, verify_ssl_certs=False)
+        self.model = OpenAI(api_key=self.credentials)
 
     def unload(self) -> None:
         self.is_loaded = False
