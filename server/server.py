@@ -2,7 +2,7 @@ import os
 import logging
 
 from kafka_client import KafkaClient, LLMTestCheckResult
-from modelling import IModel, DummyModel, GigaChatModel, GPT4Model
+from modelling import IModel, DummyModel, GigaChatModel, GPT4Model, LLamaModel
 
 
 class TestCheckerServer:
@@ -16,6 +16,7 @@ class TestCheckerServer:
             "dummy": DummyModel(),
             "gigachat": GigaChatModel(credentials=os.getenv("GIGACHAT_CREDENTIALS", "")),
             "gpt4": GPT4Model(credentials=os.getenv("GPT4_CREDENTIALS", "")),
+            "llama": LLamaModel(checkpoint_path=os.getenv("LLAMA_CHECKPOINT_PATH", "")),
         }
 
     def run(self) -> None:

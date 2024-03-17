@@ -55,5 +55,5 @@ class GigaChatModel(IModel):
         prompt: str = f"Вопрос: {question.text}\nВарианты ответа:\n"
         for symbol, answer in zip(self._possible_answers, question.answers):
             prompt += f"{symbol}: {answer.text}\n"
-        prompt += "Ответ: "
+        prompt += "Правильный ответ: "
         return prompt

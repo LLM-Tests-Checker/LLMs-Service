@@ -2,3 +2,4 @@ confluent-kafka==2.3.0
 python-dotenv==1.0.1
 gigachat==0.1.19
 openai==1.14.1
+llama_cpp_python==0.2.56

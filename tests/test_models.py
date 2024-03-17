@@ -4,7 +4,7 @@ import pytest
 from dotenv import load_dotenv
 
 from kafka_client.data_model import Question, Answer
-from modelling import DummyModel, GigaChatModel, GPT4Model
+from modelling import DummyModel, GigaChatModel, GPT4Model, LLamaModel
 
 
 @pytest.fixture
@@ -22,10 +22,9 @@ def question() -> Question:
     )
 
 
-@pytest.mark.parametrize(("num_answers",), [(1,), (3,), (5,), (10,)])
-def test_dummy_model(question: Question, num_answers: int) -> None:
+def test_dummy_model(question: Question) -> None:
     model: DummyModel = DummyModel()
-    assert 0 <= model.get_answer(question) < num_answers
+    assert 0 <= model.get_answer(question) < 4
 
 
 def test_gigachat_model(question: Question) -> None:
@@ -38,5 +37,12 @@ def test_gigachat_model(question: Question) -> None:
 def test_gpt4_model(question: Question) -> None:
     load_dotenv()
     model: GPT4Model = GPT4Model(credentials=os.getenv("GPT4_CREDENTIALS", ""))
+    model.load()
+    assert model.get_answer(question) == 2
+
+
+def test_llama_model(question: Question) -> None:
+    load_dotenv()
+    model: LLamaModel = LLamaModel(checkpoint_path="...")
     model.load()
     assert model.get_answer(question) == 2
