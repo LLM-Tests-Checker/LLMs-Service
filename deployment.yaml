@@ -30,14 +30,14 @@ spec:
           image: cr.yandex/crpqcg70aaep5tihmd33/llms-service:latest
           env:
             - name: KAFKA_BROKER_ADDR
-              value: "${{KAFKA_BROKER_ADDR}}"
+              value: "{{KAFKA_BROKER_ADDR}}"
             - name: KAFKA_BROKER_PORT
-              value: "${{KAFKA_BROKER_PORT}}"
+              value: "9092"
             - name: KAFKA_REQUEST_TOPIC
-              value: "${{KAFKA_REQUEST_TOPIC}}"
+              value: "llm_tests_launch_tasks"
             - name: KAFKA_RESPONSE_TOPIC
-              value: "${{KAFKA_RESPONSE_TOPIC}}"
+              value: "llm_tests_results"
             - name: GIGACHAT_CREDENTIALS
-              value: "${{GIGACHAT_CREDENTIALS}}"
+              value: "{{GIGACHAT_CREDENTIALS}}"
             - name: GPT4_CREDENTIALS
-              value: "${{GPT4_CREDENTIALS}}"
+              value: "{{GPT4_CREDENTIALS}}"

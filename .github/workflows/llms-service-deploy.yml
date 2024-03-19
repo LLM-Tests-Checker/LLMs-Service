@@ -1,18 +1,51 @@
-name: Docker Image CI
+name: Deploy llms-service
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Deploy Implementer'
+        default: 'World'
+        required: true
 
 jobs:
-
-  build:
-
+  deploy:
     runs-on: ubuntu-latest
+    environment: prod
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - uses: actions/checkout@v3
+
+      - name: Login to Yandex Cloud Container Registry
+        id: login-cr
+        uses: yc-actions/yc-cr-login@v1
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+
+      - name: Build docker image
+        run: docker build . --file Dockerfile --tag cr.yandex/crpqcg70aaep5tihmd33/llms-service:latest
+
+      - name: Push docker image to Yandex.Cloud registry
+        run: docker push cr.yandex/crpqcg70aaep5tihmd33/llms-service:latest
+
+      - name: Wait until Yandex.Cloud process new docker image
+        uses: jakejarvis/wait-action@v0.1.1
+        with:
+          time: '30s'
+
+      - name: Substitute the real value of variables
+        env:
+          KAFKA_BROKER_ADDR: ${{ secrets.KAFKA_BROKER_ADDR }}
+          GIGACHAT_CREDENTIALS: ${{ secrets.GIGACHAT_CREDENTIALS }}
+          GPT4_CREDENTIALS: ${{ secrets.GPT4_CREDENTIALS }}
+        run: |
+          sed -i "s|{{KAFKA_BROKER_ADDR}}|$KAFKA_BROKER_ADDR|g" ./deployment.yaml
+          sed -i "s|{{GIGACHAT_CREDENTIALS}}|$GIGACHAT_CREDENTIALS|g" ./deployment.yaml
+          sed -i "s|{{GPT4_CREDENTIALS}}|$GPT4_CREDENTIALS|g" ./deployment.yaml
+
+      - name: Deploy to k8s
+        uses: actions-hub/kubectl@v1.21.2
+        env:
+          KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
+        with:
+          args: apply -f ./deployment.yaml
