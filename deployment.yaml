@@ -25,6 +25,8 @@ spec:
         repository: llms-service
         infrastructure: python
     spec:
+      nodeSelector:
+        server-size: large
       containers:
         - name: llms-service
           image: cr.yandex/crpqcg70aaep5tihmd33/llms-service:latest
